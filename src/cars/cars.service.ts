@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Car } from './interfaces/car.interface';
 import { v4 as uuid } from 'uuid';
 import { CreateCarDto } from './dto';
@@ -36,6 +40,12 @@ export class CarsService {
   update(id: string, updateCarDto: UpdateCarDto) {
     let carDB = this.findOneById(id);
 
+    if (updateCarDto.id && updateCarDto.id !== id) {
+      throw new BadRequestException(
+        `Car ID in the body (${updateCarDto.id}) does not match URL ID (${id})`,
+      );
+    }
+
     const cleanUpdateDto = Object.fromEntries(
       Object.entries(updateCarDto).filter(([_, value]) => value !== undefined),
     );
@@ -53,5 +63,10 @@ export class CarsService {
     });
 
     return carDB;
+  }
+
+  delete(id: string) {
+    this.findOneById(id);
+    this.cars = this.cars.filter((car) => car.id !== id);
   }
 }
