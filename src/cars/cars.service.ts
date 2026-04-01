@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Car } from './interfaces/car.interface';
 import { v4 as uuid } from 'uuid';
-import { CreateCarDto } from './dto/create-car.dto';
+import { CreateCarDto } from './dto';
+import { UpdateCarDto } from './dto/update-car.dto';
 
 @Injectable()
 export class CarsService {
@@ -30,5 +31,27 @@ export class CarsService {
     };
     this.cars.push(newCar);
     return newCar;
+  }
+
+  update(id: string, updateCarDto: UpdateCarDto) {
+    let carDB = this.findOneById(id);
+
+    const cleanUpdateDto = Object.fromEntries(
+      Object.entries(updateCarDto).filter(([_, value]) => value !== undefined),
+    );
+
+    this.cars = this.cars.map((car) => {
+      if (car.id === id) {
+        carDB = {
+          ...carDB,
+          ...cleanUpdateDto,
+          id,
+        };
+        return carDB;
+      }
+      return car;
+    });
+
+    return carDB;
   }
 }
